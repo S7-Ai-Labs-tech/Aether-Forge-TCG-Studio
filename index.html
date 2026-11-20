@@ -1,0 +1,2249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AetherForge TCG Studio</title>
+<style>
+:root{
+  --bg:#0b0d12;
+  --panel:#141821;
+  --panel2:#1b2130;
+  --line:#2a3245;
+  --text:#e8edf7;
+  --dim:#9aa6bd;
+  --accent:#7aa2ff;
+}
+*{
+  box-sizing:border-box;
+  -webkit-tap-highlight-color:transparent
+}
+html,body{
+  margin:0;
+  min-height:100dvh;
+  background:var(--bg);
+  color:var(--text);
+  font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif
+}
+button,input,select,textarea{
+  font:inherit;
+  color:inherit
+}
+body{
+  display:flex;
+  flex-direction:column
+}
+.topbar{
+  position:sticky;
+  top:0;
+  z-index:30;
+  display:flex;
+  gap:8px;
+  align-items:center;
+  padding:10px 12px;
+  background:rgba(11,13,18,.94);
+  border-bottom:1px solid var(--line);
+  overflow-x:auto;
+  white-space:nowrap
+}
+.brand{
+  font-weight:800;
+  margin-right:6px
+}
+.brand span{
+  color:var(--accent)
+}
+.btn{
+  border:1px solid var(--line);
+  background:var(--panel2);
+  color:var(--text);
+  padding:9px 12px;
+  border-radius:10px;
+  cursor:pointer;
+  font-weight:650;
+  white-space:nowrap
+}
+.btn:hover{
+  border-color:var(--accent)
+}
+.btn.primary{
+  background:linear-gradient(135deg,#2f5bd8,#7a4bd8);
+  border-color:#5b76d8
+}
+.btn.ghost{
+  background:transparent
+}
+.btn:disabled{
+  opacity:.45;
+  cursor:not-allowed
+}
+main{
+  flex:1;
+  display:grid;
+  grid-template-columns:minmax(320px,430px) 1fr;
+  gap:14px;
+  padding:14px;
+  max-width:1500px;
+  margin:0 auto;
+  width:100%
+}
+@media(max-width:900px){
+  main{
+    grid-template-columns:1fr
+  }
+}
+.cardpane{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:10px
+}
+.stage{
+  width:100%;
+  max-width:430px;
+  perspective:1500px
+}
+.cardwrap{
+  width:100%;
+  aspect-ratio:59 / 86;
+  border-radius:18px;
+  overflow:hidden;
+  box-shadow:0 24px 60px rgba(0,0,0,.55);
+  transform-style:preserve-3d;
+  will-change:transform
+}
+canvas{
+  display:block;
+  width:100%;
+  height:100%;
+  touch-action:none
+}
+.hint{
+  color:var(--dim);
+  font-size:12px;
+  text-align:center
+}
+.panel{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:16px;
+  overflow:hidden;
+  min-width:0
+}
+.tabs{
+  display:flex;
+  overflow-x:auto;
+  border-bottom:1px solid var(--line);
+  background:var(--panel2)
+}
+.tab{
+  padding:12px 14px;
+  border:0;
+  background:transparent;
+  color:var(--dim);
+  cursor:pointer;
+  font-weight:700;
+  white-space:nowrap;
+  border-bottom:2px solid transparent
+}
+.tab.active{
+  color:#fff;
+  border-bottom-color:var(--accent)
+}
+.tabbody{
+  padding:14px;
+  display:none
+}
+.tabbody.active{
+  display:block
+}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+  gap:10px
+}
+.field{
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+  min-width:0
+}
+.field.wide{
+  grid-column:1 / -1
+}
+label{
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:.7px;
+  color:var(--dim);
+  font-weight:750
+}
+input,select,textarea{
+  background:#0e121a;
+  border:1px solid var(--line);
+  border-radius:9px;
+  padding:9px 10px;
+  width:100%;
+  outline:none
+}
+input:focus,select:focus,textarea:focus{
+  border-color:var(--accent)
+}
+textarea{
+  min-height:130px;
+  resize:vertical
+}
+input[type=range]{
+  padding:0;
+  accent-color:var(--accent)
+}
+.row{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  align-items:center
+}
+.switch{
+  display:flex;
+  align-items:center;
+  gap:8px
+}
+.drawer{
+  position:fixed;
+  inset:0;
+  z-index:50;
+  display:none
+}
+.drawer.open{
+  display:block
+}
+.scrim{
+  position:absolute;
+  inset:0;
+  background:rgba(0,0,0,.65)
+}
+.sheet{
+  position:absolute;
+  right:0;
+  top:0;
+  bottom:0;
+  width:min(560px,100%);
+  background:var(--panel);
+  border-left:1px solid var(--line);
+  display:flex;
+  flex-direction:column
+}
+.sheethead{
+  padding:14px;
+  border-bottom:1px solid var(--line);
+  display:flex;
+  gap:8px;
+  align-items:center
+}
+.sheetbody{
+  padding:14px;
+  overflow:auto;
+  flex:1
+}
+.setcard{
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:10px;
+  margin-bottom:10px;
+  background:var(--panel2)
+}
+.setcard b{
+  display:block
+}
+.mini{
+  font-size:12px;
+  color:var(--dim)
+}
+.toast{
+  position:fixed;
+  left:50%;
+  bottom:18px;
+  transform:translateX(-50%);
+  z-index:99;
+  background:#111827;
+  border:1px solid var(--line);
+  padding:10px 14px;
+  border-radius:10px;
+  box-shadow:0 10px 30px rgba(0,0,0,.5);
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .2s
+}
+.toast.show{
+  opacity:1
+}
+.hidden{
+  display:none!important
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">Aether<span>Forge</span> TCG Studio</div>
+  <button class="btn" id="btnNew">+ New Card</button>
+  <button class="btn primary" id="btnUpload">Upload Art</button>
+  <button class="btn" id="btnSave">Save to Set</button>
+  <button class="btn" id="btnExport">Export PNG</button>
+  <button class="btn" id="btnSets">Sets &amp; Batch</button>
+  <input type="file" id="artFile" accept="image/*" class="hidden">
+</header>
+
+<main>
+  <section class="cardpane">
+    <div class="stage">
+      <div class="cardwrap" id="cardWrap">
+        <canvas id="preview" width="1626" height="2370">
+          Card preview requires JavaScript.
+        </canvas>
+      </div>
+    </div>
+    <div class="hint">
+      Drag artwork to pan • scroll or pinch to zoom • drag card or tilt phone for foil
+    </div>
+  </section>
+
+  <section class="panel">
+    <nav class="tabs">
+      <button class="tab active" data-tab="info">Card Info</button>
+      <button class="tab" data-tab="art">Art &amp; Framing</button>
+      <button class="tab" data-tab="foil">Rarity &amp; Foil</button>
+      <button class="tab" data-tab="batch">Set &amp; Batch</button>
+    </nav>
+
+    <div class="tabbody active" id="tab-info">
+      <div class="grid">
+        <div class="field wide">
+          <label for="fName">Card name</label>
+          <input id="fName" placeholder="Card Name">
+        </div>
+
+        <div class="field">
+          <label for="fFrame">Frame</label>
+          <select id="fFrame"></select>
+        </div>
+
+        <div class="field">
+          <label for="fSub">Spell / Trap subtype</label>
+          <select id="fSub"></select>
+        </div>
+
+        <div class="field">
+          <label for="fAttr">Attribute</label>
+          <select id="fAttr"></select>
+        </div>
+
+        <div class="field">
+          <label for="fLevel">Level / Rank</label>
+          <input id="fLevel" type="number" min="0" max="13" value="4">
+        </div>
+
+        <div class="field">
+          <label for="fLink">Link rating</label>
+          <input id="fLink" type="number" min="0" max="8" value="0">
+        </div>
+
+        <div class="field wide">
+          <label for="fType">Type / ability line</label>
+          <input id="fType" placeholder="Warrior / Effect">
+        </div>
+
+        <div class="field">
+          <label for="fAtk">ATK</label>
+          <input id="fAtk" value="0">
+        </div>
+
+        <div class="field">
+          <label for="fDef">DEF</label>
+          <input id="fDef" value="0">
+        </div>
+
+        <div class="field wide">
+          <label for="fEffect">Effect / flavor text</label>
+          <textarea id="fEffect" placeholder="Enter card text"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="tabbody" id="tab-art">
+      <div class="grid">
+        <div class="field">
+          <label for="aZoom">Art scale</label>
+          <input id="aZoom" type="range" min="100" max="400" value="100">
+        </div>
+
+        <div class="field">
+          <label for="aX">Art X</label>
+          <input id="aX" type="range" min="-500" max="500" value="0">
+        </div>
+
+        <div class="field">
+          <label for="aY">Art Y</label>
+          <input id="aY" type="range" min="-500" max="500" value="0">
+        </div>
+
+        <div class="field">
+          <label for="aBright">Brightness</label>
+          <input id="aBright" type="range" min="40" max="180" value="100">
+        </div>
+
+        <div class="field">
+          <label for="aContrast">Contrast</label>
+          <input id="aContrast" type="range" min="40" max="200" value="100">
+        </div>
+
+        <div class="field">
+          <label for="aSat">Saturation</label>
+          <input id="aSat" type="range" min="0" max="220" value="100">
+        </div>
+
+        <div class="field wide switch">
+          <input type="checkbox" id="fFullArt">
+          <label for="fFullArt" style="text-transform:none">Full-art / overframe artwork</label>
+        </div>
+
+        <div class="field wide">
+          <button class="btn ghost" id="btnResetArt">Reset art framing</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="tabbody" id="tab-foil">
+      <div class="grid">
+        <div class="field">
+          <label for="fRarity">Rarity</label>
+          <select id="fRarity"></select>
+        </div>
+
+        <div class="field">
+          <label for="fEdition">Edition</label>
+          <select id="fEdition">
+            <option>1st Edition</option>
+            <option>Unlimited Edition</option>
+            <option>Limited Edition</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="foilI">Foil intensity</label>
+          <input id="foilI" type="range" min="0" max="100" value="65">
+        </div>
+
+        <div class="field">
+          <label for="foilX">Light angle X</label>
+          <input id="foilX" type="range" min="-100" max="100" value="0">
+        </div>
+
+        <div class="field">
+          <label for="foilY">Light angle Y</label>
+          <input id="foilY" type="range" min="-100" max="100" value="0">
+        </div>
+
+        <div class="field">
+          <label for="foilC">Specular contrast</label>
+          <input id="foilC" type="range" min="0" max="100" value="55">
+        </div>
+
+        <div class="field">
+          <label for="tiltX">Card tilt X</label>
+          <input id="tiltX" type="range" min="-30" max="30" value="0">
+        </div>
+
+        <div class="field">
+          <label for="tiltY">Card tilt Y</label>
+          <input id="tiltY" type="range" min="-30" max="30" value="0">
+        </div>
+
+        <div class="field wide switch">
+          <input type="checkbox" id="autoTilt">
+          <label for="autoTilt" style="text-transform:none">Auto-tilt preview</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="tabbody" id="tab-batch">
+      <div class="grid">
+        <div class="field">
+          <label for="setSelect">Active set</label>
+          <select id="setSelect"></select>
+        </div>
+
+        <div class="field">
+          <label for="fNumber">Set number</label>
+          <input id="fNumber" placeholder="MYSET-EN001">
+        </div>
+
+        <div class="field">
+          <label for="fSetId">Set ID shown on card</label>
+          <input id="fSetId" placeholder="MYSET-EN001">
+        </div>
+
+        <div class="field">
+          <label for="fPass">Passcode</label>
+          <input id="fPass" maxlength="8" placeholder="00000000">
+        </div>
+
+        <div class="field">
+          <label for="fCopyright">Creator copyright</label>
+          <input id="fCopyright" placeholder="© Your Studio">
+        </div>
+
+        <div class="field wide">
+          <label>Batch status</label>
+          <div class="mini" id="batchStatus">Ready.</div>
+        </div>
+
+        <div class="field wide row">
+          <button class="btn" id="btnImport">Import JSON</button>
+          <button class="btn" id="btnExportJSON">Export JSON</button>
+          <button class="btn primary" id="btnBatch">Batch Export Set PNGs</button>
+          <input type="file" id="jsonFile" accept=".json,application/json" class="hidden">
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div class="drawer" id="setDrawer">
+  <div class="scrim" data-close></div>
+  <div class="sheet">
+    <div class="sheethead">
+      <b>Sets &amp; Batch</b>
+      <span style="flex:1"></span>
+      <button class="btn ghost" data-close>Close</button>
+    </div>
+    <div class="sheetbody" id="setList"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script>
+"use strict";
+
+const CARD_WIDTH = 1626;
+const CARD_HEIGHT = 2370;
+const ART_X = 197;
+const ART_Y = 308;
+const ART_WIDTH = 1232;
+const ART_HEIGHT = 1232;
+
+const FRAME_STYLES = {
+  "Normal Monster": {
+    top: "#f6d97a",
+    bottom: "#c99b31"
+  },
+  "Effect Monster": {
+    top: "#f3a355",
+    bottom: "#a95c1d"
+  },
+  "Ritual Monster": {
+    top: "#7fa9e8",
+    bottom: "#2c5ba8"
+  },
+  "Fusion Monster": {
+    top: "#b58ae0",
+    bottom: "#5d3096"
+  },
+  "Synchro Monster": {
+    top: "#e8e8e8",
+    bottom: "#8b8b8b"
+  },
+  "Xyz Monster": {
+    top: "#3d3d3d",
+    bottom: "#101010"
+  },
+  "Link Monster": {
+    top: "#26507e",
+    bottom: "#0d233c"
+  },
+  "Token": {
+    top: "#b9b9b9",
+    bottom: "#6d6d6d"
+  },
+  "Spell Card": {
+    top: "#4fc7b5",
+    bottom: "#137a6d"
+  },
+  "Trap Card": {
+    top: "#d86fb4",
+    bottom: "#8d2a6d"
+  }
+};
+
+const ATTRIBUTES = [
+  "DARK",
+  "LIGHT",
+  "FIRE",
+  "WATER",
+  "EARTH",
+  "WIND",
+  "DIVINE",
+  "SPELL",
+  "TRAP"
+];
+
+const SPELL_TRAP_SUBTYPES = [
+  "None",
+  "Normal",
+  "Field",
+  "Quick-Play",
+  "Continuous",
+  "Equip",
+  "Ritual",
+  "Counter"
+];
+
+const RARITIES = [
+  "Common",
+  "Rare",
+  "Super Rare",
+  "Ultra Rare",
+  "Secret Rare",
+  "Prismatic Secret",
+  "Starlight Rare",
+  "Collector's Rare",
+  "Ultimate Rare"
+];
+
+const EDITIONS = [
+  "1st Edition",
+  "Unlimited Edition",
+  "Limited Edition"
+];
+
+const STORAGE_KEY = "aetherforge_studio_v1";
+
+let studioData = loadStudioData();
+let activeSetIndex = 0;
+let artworkImage = null;
+let cardTilt = {
+  x: 0,
+  y: 0
+};
+let autoTiltEnabled = false;
+let animationFrame = 0;
+
+let currentCard = createBlankCard();
+
+function loadStudioData() {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+
+    if (stored) {
+      const parsed = JSON.parse(stored);
+
+      if (parsed && Array.isArray(parsed.sets)) {
+        return parsed;
+      }
+    }
+  } catch (error) {
+    console.warn("Could not load saved studio data.", error);
+  }
+
+  return {
+    studioVersion: "1.0",
+    sets: []
+  };
+}
+
+function saveStudioData() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(studioData));
+}
+
+function createBlankCard() {
+  return {
+    setNumber: "",
+    name: "New Card",
+    frame: "Effect Monster",
+    subType: "None",
+    attribute: "DARK",
+    level: 4,
+    link: 0,
+    typeLine: "Warrior / Effect",
+    atk: "0",
+    def: "0",
+    rarity: "Common",
+    edition: "1st Edition",
+    setId: "",
+    passcode: "00000000",
+    copyright: "© AetherForge",
+    effect: "",
+    fullArt: false,
+    foil: 65,
+    lightX: 0,
+    lightY: 0,
+    contrast: 55,
+    artX: 0,
+    artY: 0,
+    artZoom: 100,
+    bright: 100,
+    contrastArt: 100,
+    sat: 100
+  };
+}
+
+function getElement(id) {
+  return document.getElementById(id);
+}
+
+function showToast(message) {
+  const toast = getElement("toast");
+  toast.textContent = message;
+  toast.classList.add("show");
+
+  clearTimeout(toast.hideTimer);
+  toast.hideTimer = setTimeout(() => {
+    toast.classList.remove("show");
+  }, 2200);
+}
+
+function drawRoundedRect(context, x, y, width, height, radius) {
+  context.beginPath();
+  context.moveTo(x + radius, y);
+  context.arcTo(x + width, y, x + width, y + height, radius);
+  context.arcTo(x + width, y + height, x, y + height, radius);
+  context.arcTo(x, y + height, x, y, radius);
+  context.arcTo(x, y, x + width, y, radius);
+  context.closePath();
+}
+
+function fitCardText(context, text, x, y, maxWidth, maxHeight, startingSize, lineScale, bold) {
+  const words = String(text || "").split(/\s+/).filter(Boolean);
+
+  if (!words.length) {
+    return;
+  }
+
+  let lowSize = 14;
+  let highSize = startingSize;
+  let bestFit = null;
+
+  const measureAtSize = (size) => {
+    context.font = `${bold ? "700 " : ""}${size}px Arial, sans-serif`;
+    const lineHeight = size * lineScale;
+    const lines = [];
+    let currentLine = "";
+
+    for (const word of words) {
+      const testLine = currentLine ? `${currentLine} ${word}` : word;
+
+      if (context.measureText(testLine).width > maxWidth && currentLine) {
+        lines.push(currentLine);
+        currentLine = word;
+      } else {
+        currentLine = testLine;
+      }
+    }
+
+    if (currentLine) {
+      lines.push(currentLine);
+    }
+
+    return {
+      lines,
+      lineHeight,
+      totalHeight: lines.length * lineHeight
+    };
+  };
+
+  while (lowSize <= highSize) {
+    const middleSize = Math.floor((lowSize + highSize) / 2);
+    const measurement = measureAtSize(middleSize);
+
+    if (measurement.totalHeight <= maxHeight) {
+      bestFit = {
+        size: middleSize,
+        lines: measurement.lines,
+        lineHeight: measurement.lineHeight
+      };
+      lowSize = middleSize + 1;
+    } else {
+      highSize = middleSize - 1;
+    }
+  }
+
+  if (!bestFit) {
+    const fallback = measureAtSize(14);
+    bestFit = {
+      size: 14,
+      lines: fallback.lines,
+      lineHeight: fallback.lineHeight
+    };
+  }
+
+  context.fillStyle = "#100c04";
+  context.textBaseline = "top";
+  context.textAlign = "left";
+
+  bestFit.lines.forEach((line, index) => {
+    context.fillText(line, x, y + index * bestFit.lineHeight);
+  });
+}
+
+function drawAttributeOrb(context, centerX, centerY, radius, attribute) {
+  const orbColors = {
+    DARK: ["#3a3a4a", "#0d0d16"],
+    LIGHT: ["#fff3b0", "#c8a020"],
+    FIRE: ["#ff9b52", "#a12d0a"],
+    WATER: ["#7fc8ff", "#175a9e"],
+    EARTH: ["#c9a86d", "#6b4d21"],
+    WIND: ["#b8f2c8", "#1d7a4a"],
+    DIVINE: ["#ffe680", "#a06d10"],
+    SPELL: ["#7fe3cf", "#0e6f60"],
+    TRAP: ["#ef8ac6", "#7d1a5c"]
+  };
+
+  const colors = orbColors[attribute] || orbColors.DARK;
+  const gradient = context.createRadialGradient(
+    centerX - radius * 0.35,
+    centerY - radius * 0.4,
+    radius * 0.1,
+    centerX,
+    centerY,
+    radius
+  );
+
+  gradient.addColorStop(0, colors[0]);
+  gradient.addColorStop(1, colors[1]);
+
+  context.fillStyle = gradient;
+  context.beginPath();
+  context.arc(centerX, centerY, radius, 0, Math.PI * 2);
+  context.fill();
+
+  context.strokeStyle = "rgba(0, 0, 0, 0.55)";
+  context.lineWidth = 4;
+  context.stroke();
+
+  context.fillStyle = "rgba(255, 255, 255, 0.85)";
+  context.font = "700 34px Arial, sans-serif";
+  context.textAlign = "center";
+  context.textBaseline = "middle";
+
+  const symbol =
+    attribute === "SPELL" ? "✦" :
+    attribute === "TRAP" ? "⚠" :
+    attribute.charAt(0);
+
+  context.fillText(symbol, centerX, centerY + 2);
+}
+
+function drawStars(context, startX, startY, count, rightAligned, isRank) {
+  for (let index = 0; index < count; index++) {
+    const starX = rightAligned ? startX - index * 46 : startX + index * 46;
+    const gradient = context.createLinearGradient(starX, startY - 18, starX, startY + 18);
+
+    if (isRank) {
+      gradient.addColorStop(0, "#ff8d7a");
+      gradient.addColorStop(1, "#a01818");
+    } else {
+      gradient.addColorStop(0, "#ffe89a");
+      gradient.addColorStop(1, "#9c6d10");
+    }
+
+    context.fillStyle = gradient;
+    context.beginPath();
+
+    for (let point = 0; point < 10; point++) {
+      const angle = -Math.PI / 2 + point * Math.PI / 5;
+      const radius = point % 2 === 0 ? 26 : 11;
+      context.lineTo(
+        starX + Math.cos(angle) * radius,
+        startY + Math.sin(angle) * radius
+      );
+    }
+
+    context.closePath();
+    context.fill();
+    context.strokeStyle = "rgba(0, 0, 0, 0.6)";
+    context.lineWidth = 3;
+    context.stroke();
+  }
+}
+
+function drawLinkArrows(context, centerX, centerY, linkCount) {
+  const directions = [
+    [0, -1],
+    [1, -1],
+    [1, 0],
+    [1, 1],
+    [0, 1],
+    [-1, 1],
+    [-1, 0],
+    [-1, -1]
+  ];
+
+  for (let index = 0; index < 8; index++) {
+    const isActive = index < linkCount;
+    const direction = directions[index];
+    const endX = centerX + direction[0] * 92;
+    const endY = centerY + direction[1] * 92;
+
+    context.strokeStyle = isActive ? "#8fd0ff" : "rgba(255, 255, 255, 0.13)";
+    context.lineWidth = isActive ? 16 : 8;
+    context.lineCap = "round";
+
+    context.beginPath();
+    context.moveTo(centerX, centerY);
+    context.lineTo(endX, endY);
+    context.stroke();
+
+    if (isActive) {
+      context.fillStyle = "#cfeaff";
+      context.beginPath();
+      context.arc(endX, endY, 13, 0, Math.PI * 2);
+      context.fill();
+    }
+  }
+
+  context.fillStyle = "#0a1626";
+  context.beginPath();
+  context.arc(centerX, centerY, 34, 0, Math.PI * 2);
+  context.fill();
+
+  context.strokeStyle = "#8fd0ff";
+  context.lineWidth = 5;
+  context.stroke();
+}
+
+function drawFoilLayer(context, x, y, width, height, intensity, lightX, lightY, contrast, blendMode) {
+  if (intensity <= 0) {
+    return;
+  }
+
+  const angle = Math.atan2(lightY, lightX);
+  const centerX = x + width / 2;
+  const centerY = y + height / 2;
+  const radius = Math.hypot(width, height) / 2;
+
+  context.save();
+  drawRoundedRect(context, x, y, width, height, 10);
+  context.clip();
+
+  const rainbow = context.createLinearGradient(
+    centerX - Math.cos(angle) * radius,
+    centerY - Math.sin(angle) * radius,
+    centerX + Math.cos(angle) * radius,
+    centerY + Math.sin(angle) * radius
+  );
+
+  const alpha = 0.05 + (intensity / 100) * (0.25 + (contrast / 100) * 0.55);
+
+  rainbow.addColorStop(0, "#ff2d6f");
+  rainbow.addColorStop(0.18, "#ffd166");
+  rainbow.addColorStop(0.36, "#5ef2c0");
+  rainbow.addColorStop(0.54, "#4aa8ff");
+  rainbow.addColorStop(0.72, "#b06cff");
+  rainbow.addColorStop(0.88, "#ff5ea8");
+  rainbow.addColorStop(1, "#ffffff");
+
+  context.globalCompositeOperation = blendMode || "screen";
+  context.globalAlpha = alpha;
+  context.fillStyle = rainbow;
+  context.fillRect(x, y, width, height);
+
+  context.globalAlpha = alpha * 0.7;
+  context.globalCompositeOperation = "color-dodge";
+
+  const specular = context.createRadialGradient(
+    centerX + lightX * 3,
+    centerY + lightY * 3,
+    10,
+    centerX,
+    centerY,
+    radius
+  );
+
+  specular.addColorStop(0, "#ffffff");
+  specular.addColorStop(0.25, "rgba(255, 255, 255, 0)");
+
+  context.fillStyle = specular;
+  context.fillRect(x, y, width, height);
+  context.restore();
+}
+
+function drawPrismLayer(context, x, y, width, height, intensity, diagonal) {
+  if (intensity <= 0) {
+    return;
+  }
+
+  context.save();
+  drawRoundedRect(context, x, y, width, height, 10);
+  context.clip();
+
+  context.globalCompositeOperation = "screen";
+  context.strokeStyle = "#ffffff";
+  context.lineWidth = 2;
+  const spacing = diagonal ? 18 : 26;
+
+  if (diagonal) {
+    for (let offset = -height; offset < width + height; offset += spacing) {
+      context.globalAlpha = (intensity / 100) * 0.2;
+
+      context.beginPath();
+      context.moveTo(x + offset, y);
+      context.lineTo(x + offset + height, y + height);
+      context.stroke();
+
+      context.beginPath();
+      context.moveTo(x + offset, y + height);
+      context.lineTo(x + offset + height, y);
+      context.stroke();
+    }
+  } else {
+    for (let offsetX = 0; offsetX < width; offsetX += spacing) {
+      context.globalAlpha = (intensity / 100) * 0.16;
+
+      context.beginPath();
+      context.moveTo(x + offsetX, y);
+      context.lineTo(x + offsetX, y + height);
+      context.stroke();
+    }
+
+    for (let offsetY = 0; offsetY < height; offsetY += spacing) {
+      context.beginPath();
+      context.moveTo(x, y + offsetY);
+      context.lineTo(x + width, y + offsetY);
+      context.stroke();
+    }
+  }
+
+  context.restore();
+}
+
+function drawCard(context, card, image) {
+  const c = context;
+  const W = CARD_WIDTH;
+  const H = CARD_HEIGHT;
+  const C = { ...createBlankCard(), ...card };
+  const aliases = {
+    Normal: "Normal Monster",
+    Effect: "Effect Monster",
+    Ritual: "Ritual Monster",
+    Fusion: "Fusion Monster",
+    Synchro: "Synchro Monster",
+    Xyz: "Xyz Monster",
+    Link: "Link Monster",
+    Spell: "Spell Card",
+    Trap: "Trap Card"
+  };
+  const frame = aliases[C.frame] || C.frame;
+  const style = FRAME_STYLES[frame] || FRAME_STYLES["Effect Monster"];
+  const monster = frame !== "Spell Card" && frame !== "Trap Card";
+  const link = frame === "Link Monster";
+  const rank = frame === "Xyz Monster";
+  const rarity = C.rarity;
+  const intensity = Math.max(0, Math.min(100, Number(C.foil) || 0));
+  const artHolo = /Super|Ultra|Secret|Starlight|Ultimate|Collector/.test(rarity);
+  const fullFoil = /Prismatic|Starlight/.test(rarity);
+  const relief = /Ultimate|Collector/.test(rarity);
+
+  function box(x, y, width, height, radius, fill, stroke, lineWidth = 3) {
+    drawRoundedRect(c, x, y, width, height, radius);
+    if (fill) {
+      c.fillStyle = fill;
+      c.fill();
+    }
+    if (stroke) {
+      c.strokeStyle = stroke;
+      c.lineWidth = lineWidth;
+      c.stroke();
+    }
+  }
+
+  function compressedText(text, x, y, width, font, fill, align = "left") {
+    c.save();
+    c.font = font;
+    c.fillStyle = fill;
+    c.textBaseline = "alphabetic";
+    c.textAlign = "left";
+    const measured = c.measureText(String(text)).width;
+    const scale = Math.min(1, width / Math.max(1, measured));
+    let left = x;
+    if (align === "right") left -= Math.min(width, measured);
+    c.translate(left, y);
+    c.scale(scale, 1);
+    c.fillText(String(text), 0, 0);
+    c.restore();
+  }
+
+  function metallicFill(kind, y, height) {
+    const gradient = c.createLinearGradient(
+      0,
+      y,
+      W,
+      y + height + Number(C.lightY) * 2
+    );
+    const stops = kind === "gold"
+      ? ["#5c3907", "#fff0ac", "#ad771b", "#fff4bd", "#86500b"]
+      : kind === "prismatic"
+      ? ["#eeeaff", "#83dbff", "#f8b8ed", "#fbf5b1", "#d9eaff"]
+      : ["#626d7c", "#f8fbff", "#8b99aa", "#ffffff", "#596474"];
+    stops.forEach((color, index) => {
+      gradient.addColorStop(index / (stops.length - 1), color);
+    });
+    return gradient;
+  }
+
+  function paintArtwork(x, y, width, height) {
+    c.save();
+    drawRoundedRect(c, x, y, width, height, 4);
+    c.clip();
+
+    if (image && image.width && image.height) {
+      const zoom = Math.max(1, Number(C.artZoom) / 100);
+      const scale = Math.max(width / image.width, height / image.height) * zoom;
+      const dw = image.width * scale;
+      const dh = image.height * scale;
+      const offsetX = Math.max(
+        -(dw - width) / 2,
+        Math.min((dw - width) / 2, Number(C.artX) || 0)
+      );
+      const offsetY = Math.max(
+        -(dh - height) / 2,
+        Math.min((dh - height) / 2, Number(C.artY) || 0)
+      );
+      c.filter =
+        `brightness(${C.bright}%) ` +
+        `contrast(${C.contrastArt}%) ` +
+        `saturate(${C.sat}%)`;
+      c.drawImage(
+        image,
+        x + (width - dw) / 2 + offsetX,
+        y + (height - dh) / 2 + offsetY,
+        dw,
+        dh
+      );
+      c.filter = "none";
+    } else {
+      const sky = c.createLinearGradient(x, y, x + width, y + height);
+      sky.addColorStop(0, "#101d37");
+      sky.addColorStop(0.5, "#34344e");
+      sky.addColorStop(1, "#0c1428");
+      c.fillStyle = sky;
+      c.fillRect(x, y, width, height);
+
+      c.save();
+      c.translate(x + width / 2, y + height / 2);
+      for (let index = 0; index < 7; index++) {
+        c.rotate(Math.PI / 7);
+        c.strokeStyle = `rgba(155,180,255,${0.06 + index * 0.014})`;
+        c.lineWidth = 3;
+        c.strokeRect(-width * 0.26, -width * 0.26, width * 0.52, width * 0.52);
+      }
+      c.restore();
+    }
+    c.restore();
+  }
+
+  c.save();
+  c.setTransform(1, 0, 0, 1, 0, 0);
+  c.clearRect(0, 0, W, H);
+  c.fillStyle = "#292426";
+  c.fillRect(0, 0, W, H);
+
+  const background = c.createLinearGradient(0, 0, W, H);
+  background.addColorStop(0, style.top);
+  background.addColorStop(0.48, style.bottom);
+  background.addColorStop(1, style.top);
+  box(30, 30, W - 60, H - 60, 28, background, "#181819", 12);
+
+  if (C.fullArt) {
+    paintArtwork(48, 48, W - 96, H - 96);
+    c.fillStyle = "rgba(8,12,23,0.2)";
+    c.fillRect(48, 48, W - 96, H - 96);
+  }
+
+  c.save();
+  c.globalAlpha = 0.075;
+  for (let index = 0; index < 4000; index++) {
+    const x = (index * 487 + 31) % W;
+    const y = (index * 859 + 97) % H;
+    c.fillStyle = index % 2 ? "#ffffff" : "#000000";
+    c.fillRect(x, y, 2, 3);
+  }
+  c.restore();
+
+  if (fullFoil && intensity > 0) {
+    c.save();
+    c.beginPath();
+    c.rect(48, 48, W - 96, H - 96);
+    c.rect(ART_X, ART_Y, ART_WIDTH, ART_HEIGHT);
+    c.clip("evenodd");
+    drawFoilLayer(
+      c, 48, 48, W - 96, H - 96,
+      intensity * 0.65, C.lightX, C.lightY, C.contrast, "screen"
+    );
+    drawPrismLayer(c, 48, 48, W - 96, H - 96, intensity * 0.65, false);
+    c.restore();
+  }
+
+  box(
+    92, 83, 1442, 143, 5,
+    C.fullArt ? "rgba(234,223,195,0.80)" : style.top,
+    "#2e241b", 5
+  );
+  box(101, 92, 1424, 125, 3, null, "rgba(255,255,255,0.42)", 3);
+
+  let titleFill = rank || link ? "#fff9e8" : "#17110c";
+  if (rarity === "Rare") titleFill = metallicFill("silver", 100, 100);
+  if (rarity === "Ultra Rare") titleFill = metallicFill("gold", 100, 100);
+  if (/Secret|Starlight/.test(rarity)) {
+    titleFill = metallicFill("prismatic", 100, 100);
+  }
+  if (relief) titleFill = "#16120f";
+
+  c.save();
+  if (rarity !== "Common" && rarity !== "Super Rare") {
+    c.shadowColor = "rgba(0,0,0,0.65)";
+    c.shadowBlur = relief ? 2 : 1;
+    c.shadowOffsetY = 3;
+  }
+  compressedText(
+    C.name || "Untitled",
+    122, 185, 1240,
+    '74px Georgia, "Times New Roman", serif',
+    titleFill
+  );
+  c.restore();
+
+  drawAttributeOrb(c, 1447, 154, 53, C.attribute || "DARK");
+
+  if (monster && !link) {
+    const count = Math.max(0, Math.min(13, Math.floor(Number(C.level) || 0)));
+    drawStars(c, rank ? 225 : 1399, 265, count, !rank, rank);
+  } else if (!monster) {
+    const descriptor = frame === "Spell Card" ? "SPELL CARD" : "TRAP CARD";
+    const symbols = {
+      None: "",
+      Normal: "",
+      Field: "✥",
+      "Quick-Play": "ϟ",
+      Continuous: "∞",
+      Equip: "✚",
+      Ritual: "♨",
+      Counter: "↶"
+    };
+    compressedText(
+      `[ ${descriptor} ${symbols[C.subType] || ""} ]`,
+      1425, 282, 1120,
+      'bold 42px Georgia, "Times New Roman", serif',
+      rank || link ? "#fff9e8" : "#17110c",
+      "right"
+    );
+  }
+
+  box(ART_X - 13, ART_Y - 13, ART_WIDTH + 26, ART_HEIGHT + 26, 5, "#403b37", "#191b1e", 5);
+  paintArtwork(ART_X, ART_Y, ART_WIDTH, ART_HEIGHT);
+
+  if (artHolo && intensity > 0) {
+    drawFoilLayer(
+      c, ART_X, ART_Y, ART_WIDTH, ART_HEIGHT,
+      intensity, C.lightX, C.lightY, C.contrast, "screen"
+    );
+    if (/Secret/.test(rarity)) {
+      drawPrismLayer(
+        c, ART_X, ART_Y, ART_WIDTH, ART_HEIGHT,
+        intensity, !/Prismatic/.test(rarity)
+      );
+    }
+    if (/Starlight/.test(rarity)) {
+      drawPrismLayer(c, ART_X, ART_Y, ART_WIDTH, ART_HEIGHT, intensity, false);
+    }
+  }
+
+  box(ART_X - 4, ART_Y - 4, ART_WIDTH + 8, ART_HEIGHT + 8, 3, null, "#c2b6a0", 5);
+
+  if (link) {
+    c.save();
+    const arrowPositions = [
+      [ART_X + ART_WIDTH / 2, ART_Y - 7, 0],
+      [ART_X + ART_WIDTH, ART_Y, Math.PI / 4],
+      [ART_X + ART_WIDTH + 7, ART_Y + ART_HEIGHT / 2, Math.PI / 2],
+      [ART_X + ART_WIDTH, ART_Y + ART_HEIGHT, Math.PI * 3 / 4],
+      [ART_X + ART_WIDTH / 2, ART_Y + ART_HEIGHT + 7, Math.PI],
+      [ART_X, ART_Y + ART_HEIGHT, Math.PI * 5 / 4],
+      [ART_X - 7, ART_Y + ART_HEIGHT / 2, Math.PI * 3 / 2],
+      [ART_X, ART_Y, Math.PI * 7 / 4]
+    ];
+    arrowPositions.forEach(([x, y, angle], index) => {
+      c.save();
+      c.translate(x, y);
+      c.rotate(angle);
+      c.beginPath();
+      c.moveTo(0, -40);
+      c.lineTo(34, 18);
+      c.lineTo(-34, 18);
+      c.closePath();
+      c.fillStyle = index < Number(C.link) ? "#ef4c38" : "#34373d";
+      c.fill();
+      c.strokeStyle = "#d4d9df";
+      c.lineWidth = 4;
+      c.stroke();
+      c.restore();
+    });
+    c.restore();
+  }
+
+  const metadataColor = rank || link || C.fullArt ? "#fff8e9" : "#21190f";
+  compressedText(
+    C.edition === "Unlimited Edition" ? "" : C.edition,
+    198, 1604, 560,
+    'bold 30px Georgia, serif',
+    metadataColor
+  );
+  compressedText(
+    C.setId || C.setNumber || "",
+    1429, 1604, 650,
+    '30px Georgia, serif',
+    metadataColor,
+    "right"
+  );
+
+  const effectX = 116;
+  const effectY = 1650;
+  const effectWidth = 1394;
+  const effectHeight = 526;
+  box(
+    effectX, effectY, effectWidth, effectHeight, 3,
+    C.fullArt ? "rgba(249,242,222,0.91)" : "#f5ebd5",
+    "#3d3023", 5
+  );
+  box(effectX + 8, effectY + 8, effectWidth - 16, effectHeight - 16, 2, null, "#c8bba0", 2);
+
+  if (monster) {
+    compressedText(
+      `[ ${String(C.typeLine || "Warrior / Effect").toUpperCase()} ]`,
+      143, 1712, 1338,
+      'bold 37px Georgia, "Times New Roman", serif',
+      "#17110c"
+    );
+  }
+
+  const textX = 144;
+  const textY = monster ? 1736 : 1680;
+  const textWidth = 1336;
+  const textHeight = monster ? 348 : 457;
+  const normalFlavor = frame === "Normal Monster" || frame === "Token";
+
+  function wrapEffect(size) {
+    c.font = `${normalFlavor ? "italic " : ""}${size}px Georgia, "Times New Roman", serif`;
+    const lines = [];
+    const paragraphs = String(C.effect || "").replace(/\r/g, "").split("\n");
+    for (const paragraph of paragraphs) {
+      if (!paragraph.trim()) {
+        lines.push("");
+        continue;
+      }
+      let line = "";
+      const words = paragraph.trim().split(/\s+/);
+
+      for (const word of words) {
+        const candidate = line ? `${line} ${word}` : word;
+        if (c.measureText(candidate).width <= textWidth) {
+          line = candidate;
+          continue;
+        }
+        if (line) {
+          lines.push(line);
+          line = "";
+        }
+        if (c.measureText(word).width <= textWidth) {
+          line = word;
+        } else {
+          for (const character of word) {
+            if (line && c.measureText(line + character).width > textWidth) {
+              lines.push(line);
+              line = character;
+            } else {
+              line += character;
+            }
+          }
+        }
+      }
+      if (line) lines.push(line);
+    }
+    return lines;
+  }
+
+  let low = 1;
+  let high = 43;
+  let bestSize = 1;
+  let bestLines = [];
+  while (low <= high) {
+    const size = Math.floor((low + high) / 2);
+    const lines = wrapEffect(size);
+    if (lines.length * size * 1.12 <= textHeight) {
+      bestSize = size;
+      bestLines = lines;
+      low = size + 1;
+    } else {
+      high = size - 1;
+    }
+  }
+
+  c.save();
+  c.beginPath();
+  c.rect(textX, textY, textWidth, textHeight);
+  c.clip();
+  c.font = `${normalFlavor ? "italic " : ""}${bestSize}px Georgia, "Times New Roman", serif`;
+  c.fillStyle = "#17110c";
+  c.textAlign = "left";
+  c.textBaseline = "top";
+  bestLines.forEach((line, index) => {
+    c.fillText(line, textX, textY + index * bestSize * 1.12);
+  });
+  c.restore();
+
+  if (monster) {
+    c.strokeStyle = "#30251a";
+    c.lineWidth = 2;
+    c.beginPath();
+    c.moveTo(143, 2102);
+    c.lineTo(1482, 2102);
+    c.stroke();
+
+    const stats = link
+      ? `ATK/${C.atk || "0"}   LINK-${Number(C.link) || 0}`
+      : `ATK/${C.atk || "0"}   DEF/${C.def || "0"}`;
+    compressedText(
+      stats, 1480, 2154, 1250,
+      'bold 43px "Times New Roman", Georgia, serif',
+      "#17110c", "right"
+    );
+  }
+
+  compressedText(
+    String(C.passcode || "00000000").slice(0, 8),
+    112, 2249, 350,
+    '30px Georgia, serif',
+    metadataColor
+  );
+  compressedText(
+    C.copyright || "",
+    1399, 2249, 900,
+    '27px Georgia, serif',
+    metadataColor, "right"
+  );
+
+  const stampX = 1447;
+  const stampY = 2220;
+  const stampGold = C.edition !== "Unlimited Edition";
+  const stampGradient = metallicFill(stampGold ? "gold" : "silver", stampY, 74);
+  box(stampX, stampY, 72, 72, 2, stampGradient, "#4a4030", 2);
+
+  c.save();
+  c.beginPath();
+  c.rect(stampX + 3, stampY + 3, 66, 66);
+  c.clip();
+  c.strokeStyle = "rgba(255,255,255,0.45)";
+  c.lineWidth = 1;
+  for (let index = -70; index < 140; index += 7) {
+    c.beginPath();
+    c.moveTo(stampX + index, stampY);
+    c.lineTo(stampX + index + 72, stampY + 72);
+    c.stroke();
+  }
+  c.translate(stampX + 36, stampY + 32);
+  c.strokeStyle = "#55451e";
+  c.lineWidth = 3;
+  c.beginPath();
+  c.moveTo(-26, 0);
+  c.quadraticCurveTo(0, -23, 26, 0);
+  c.quadraticCurveTo(0, 17, -26, 0);
+  c.stroke();
+  c.beginPath();
+  c.arc(0, -2, 7, 0, Math.PI * 2);
+  c.fillStyle = "#55451e";
+  c.fill();
+  c.beginPath();
+  c.moveTo(13, 9);
+  c.lineTo(4, 24);
+  c.lineTo(-7, 18);
+  c.stroke();
+  c.restore();
+
+  if (relief) {
+    c.save();
+    c.strokeStyle = "rgba(255,255,255,0.35)";
+    c.lineWidth = 3;
+    for (let inset = 60; inset < 90; inset += 9) {
+      drawRoundedRect(c, inset, inset, W - inset * 2, H - inset * 2, 16);
+      c.stroke();
+    }
+    c.restore();
+  }
+
+  box(38, 38, W - 76, H - 76, 22, null, "rgba(255,255,255,0.28)", 3);
+  c.restore();
+}
+
+const previewCanvas = getElement("preview");
+const previewContext = previewCanvas.getContext("2d", { alpha: false });
+
+function render() {
+  if (previewCanvas.width !== CARD_WIDTH) {
+    previewCanvas.width = CARD_WIDTH;
+  }
+  if (previewCanvas.height !== CARD_HEIGHT) {
+    previewCanvas.height = CARD_HEIGHT;
+  }
+
+  drawCard(previewContext, currentCard, artworkImage);
+
+  const tiltX = Math.max(-30, Math.min(30, Number(cardTilt.x) || 0));
+  const tiltY = Math.max(-30, Math.min(30, Number(cardTilt.y) || 0));
+  getElement("cardWrap").style.transform =
+    `rotateX(${-tiltY}deg) rotateY(${tiltX}deg)`;
+}
+
+const FORM_FIELDS = {
+  fName: "name",
+  fFrame: "frame",
+  fSub: "subType",
+  fAttr: "attribute",
+  fLevel: "level",
+  fLink: "link",
+  fType: "typeLine",
+  fAtk: "atk",
+  fDef: "def",
+  fEffect: "effect",
+  fRarity: "rarity",
+  fEdition: "edition",
+  fNumber: "setNumber",
+  fSetId: "setId",
+  fPass: "passcode",
+  fCopyright: "copyright",
+  aZoom: "artZoom",
+  aX: "artX",
+  aY: "artY",
+  aBright: "bright",
+  aContrast: "contrastArt",
+  aSat: "sat",
+  foilI: "foil",
+  foilX: "lightX",
+  foilY: "lightY",
+  foilC: "contrast"
+};
+
+const NUMERIC_FIELDS = new Set([
+  "level", "link", "artZoom", "artX", "artY",
+  "bright", "contrastArt", "sat", "foil",
+  "lightX", "lightY", "contrast"
+]);
+
+function syncForm() {
+  currentCard = { ...createBlankCard(), ...currentCard };
+  for (const [id, property] of Object.entries(FORM_FIELDS)) {
+    const element = getElement(id);
+    if (element) element.value = currentCard[property] ?? "";
+  }
+  getElement("fFullArt").checked = Boolean(currentCard.fullArt);
+  getElement("tiltX").value = cardTilt.x;
+  getElement("tiltY").value = cardTilt.y;
+}
+
+function readForm() {
+  for (const [id, property] of Object.entries(FORM_FIELDS)) {
+    const element = getElement(id);
+    if (!element) continue;
+    currentCard[property] = NUMERIC_FIELDS.has(property)
+      ? Number(element.value) || 0
+      : element.value;
+  }
+  currentCard.fullArt = getElement("fFullArt").checked;
+}
+
+function buildOptions() {
+  function populate(id, values) {
+    const select = getElement(id);
+    select.replaceChildren();
+    for (const value of values) {
+      const option = document.createElement("option");
+      option.value = value;
+      option.textContent = value;
+      select.appendChild(option);
+    }
+  }
+  populate("fFrame", Object.keys(FRAME_STYLES));
+  populate("fAttr", ATTRIBUTES);
+  populate("fSub", SPELL_TRAP_SUBTYPES);
+  populate("fRarity", RARITIES);
+}
+
+function cloneCard(value) {
+  return JSON.parse(JSON.stringify(value));
+}
+
+function normalizeCard(value) {
+  const result = { ...createBlankCard(), ...value };
+  const aliases = {
+    Normal: "Normal Monster",
+    Effect: "Effect Monster",
+    Ritual: "Ritual Monster",
+    Fusion: "Fusion Monster",
+    Synchro: "Synchro Monster",
+    Xyz: "Xyz Monster",
+    Link: "Link Monster",
+    Spell: "Spell Card",
+    Trap: "Trap Card"
+  };
+  result.frame = aliases[result.frame] || result.frame;
+  return result;
+}
+
+function persistSafely() {
+  try {
+    saveStudioData();
+    return true;
+  } catch (error) {
+    showToast("Storage is full or unavailable. Export JSON to keep your work.");
+    return false;
+  }
+}
+
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = filename;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 30000);
+}
+
+function safeFilename(value) {
+  return String(value || "card")
+    .replace(/[<>:"/\\|?*\u0000-\u001f]/g, "_")
+    .trim()
+    .slice(0, 120) || "card";
+}
+
+function decodeArtwork(source) {
+  return new Promise((resolve, reject) => {
+    if (!source) {
+      resolve(null);
+      return;
+    }
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = () => reject(new Error("Artwork could not be loaded."));
+    image.src = source;
+  });
+}
+
+let artworkLoadSequence = 0;
+
+async function openCard(value) {
+  const sequence = ++artworkLoadSequence;
+  currentCard = normalizeCard(cloneCard(value));
+  artworkImage = null;
+  syncForm();
+  render();
+
+  if (currentCard.artData) {
+    try {
+      const image = await decodeArtwork(currentCard.artData);
+      if (sequence !== artworkLoadSequence) return;
+      artworkImage = image;
+      render();
+    } catch (error) {
+      showToast(error.message);
+    }
+  }
+}
+
+function makeSet() {
+  const name = prompt("Set name:", "My Custom Set");
+  if (!name || !name.trim()) return false;
+  const code = prompt("Set code:", "CUSTOM");
+  if (!code || !code.trim()) return false;
+
+  studioData.sets.push({
+    setCode: code.trim().toUpperCase(),
+    setName: name.trim(),
+    cards: []
+  });
+  activeSetIndex = studioData.sets.length - 1;
+  persistSafely();
+  refreshSets();
+  return true;
+}
+
+function refreshSets() {
+  const select = getElement("setSelect");
+  const list = getElement("setList");
+  select.replaceChildren();
+  list.replaceChildren();
+
+  const createButton = document.createElement("button");
+  createButton.className = "btn primary";
+  createButton.textContent = "+ Create Set";
+  createButton.onclick = makeSet;
+  list.appendChild(createButton);
+
+  const actions = document.createElement("div");
+  actions.className = "row";
+  actions.style.margin = "12px 0";
+
+  [
+    ["Import JSON", "btnImport"],
+    ["Export JSON", "btnExportJSON"],
+    ["Batch Export", "btnBatch"]
+  ].forEach(([label, target]) => {
+    const button = document.createElement("button");
+    button.className = "btn";
+    button.textContent = label;
+    button.onclick = () => getElement(target).click();
+    actions.appendChild(button);
+  });
+  list.appendChild(actions);
+
+  if (!studioData.sets.length) {
+    const option = document.createElement("option");
+    option.textContent = "No sets — create one";
+    option.value = "";
+    select.appendChild(option);
+    const message = document.createElement("p");
+    message.className = "mini";
+    message.textContent = "Start with an empty set or import your own JSON.";
+    list.appendChild(message);
+    return;
+  }
+
+  activeSetIndex = Math.max(
+    0,
+    Math.min(activeSetIndex, studioData.sets.length - 1)
+  );
+
+  studioData.sets.forEach((set, setIndex) => {
+    const option = document.createElement("option");
+    option.value = String(setIndex);
+    option.textContent = `${set.setCode} — ${set.setName} (${set.cards.length})`;
+    select.appendChild(option);
+
+    const section = document.createElement("section");
+    section.className = "setcard";
+
+    const heading = document.createElement("b");
+    heading.textContent = `${set.setCode} — ${set.setName}`;
+    section.appendChild(heading);
+
+    const controls = document.createElement("div");
+    controls.className = "row";
+    controls.style.margin = "10px 0";
+
+    const activate = document.createElement("button");
+    activate.className = "btn";
+    activate.textContent = setIndex === activeSetIndex ? "Active set" : "Use set";
+    activate.onclick = () => {
+      activeSetIndex = setIndex;
+      refreshSets();
+    };
+    controls.appendChild(activate);
+
+    const remove = document.createElement("button");
+    remove.className = "btn ghost";
+    remove.textContent = "Delete set";
+    remove.onclick = () => {
+      if (!confirm(`Delete "${set.setName}" and its ${set.cards.length} cards?`)) return;
+      studioData.sets.splice(setIndex, 1);
+      activeSetIndex = 0;
+      persistSafely();
+      refreshSets();
+    };
+    controls.appendChild(remove);
+    section.appendChild(controls);
+
+    set.cards.forEach((savedCard, cardIndex) => {
+      const row = document.createElement("div");
+      row.className = "row";
+      row.style.marginTop = "7px";
+
+      const load = document.createElement("button");
+      load.className = "btn ghost";
+      load.style.flex = "1";
+      load.style.whiteSpace = "normal";
+      load.style.textAlign = "left";
+      load.textContent =
+        `${savedCard.setNumber || "Unnumbered"} — ${savedCard.name || "Untitled"}`;
+      load.onclick = () => {
+        activeSetIndex = setIndex;
+        refreshSets();
+        openCard(savedCard);
+        getElement("setDrawer").classList.remove("open");
+      };
+
+      const deleteCard = document.createElement("button");
+      deleteCard.className = "btn ghost";
+      deleteCard.textContent = "Delete";
+      deleteCard.onclick = () => {
+        if (!confirm(`Delete "${savedCard.name || "Untitled"}"?`)) return;
+        set.cards.splice(cardIndex, 1);
+        persistSafely();
+        refreshSets();
+      };
+      row.append(load, deleteCard);
+      section.appendChild(row);
+    });
+    list.appendChild(section);
+  });
+
+  select.value = String(activeSetIndex);
+}
+
+function pngBlob(card, image) {
+  return new Promise((resolve, reject) => {
+    const canvas = document.createElement("canvas");
+    canvas.width = CARD_WIDTH;
+    canvas.height = CARD_HEIGHT;
+    try {
+      drawCard(canvas.getContext("2d"), normalizeCard(card), image);
+      canvas.toBlob(blob => {
+        canvas.width = 1;
+        canvas.height = 1;
+        if (blob) resolve(blob);
+        else reject(new Error("PNG export failed."));
+      }, "image/png");
+    } catch (error) {
+      reject(error);
+    }
+  });
+}
+
+let renderPending = false;
+
+function requestRender() {
+  if (renderPending) return;
+  renderPending = true;
+  requestAnimationFrame(() => {
+    renderPending = false;
+    render();
+  });
+}
+
+function bindEditor() {
+  document.querySelectorAll(".tab").forEach(button => {
+    button.onclick = () => {
+      document.querySelectorAll(".tab").forEach(tab => {
+        tab.classList.toggle("active", tab === button);
+      });
+      document.querySelectorAll(".tabbody").forEach(panel => {
+        panel.classList.toggle("active", panel.id === `tab-${button.dataset.tab}`);
+      });
+    };
+  });
+
+  Object.keys(FORM_FIELDS).forEach(id => {
+    getElement(id).addEventListener("input", () => {
+      readForm();
+      requestRender();
+    });
+  });
+
+  getElement("fFullArt").onchange = () => {
+    readForm();
+    requestRender();
+  };
+
+  ["tiltX", "tiltY"].forEach(id => {
+    getElement(id).oninput = () => {
+      cardTilt.x = Number(getElement("tiltX").value);
+      cardTilt.y = Number(getElement("tiltY").value);
+      currentCard.lightX = cardTilt.x * 3;
+      currentCard.lightY = cardTilt.y * 3;
+      requestRender();
+    };
+  });
+
+  getElement("btnNew").onclick = () => {
+    ++artworkLoadSequence;
+    currentCard = createBlankCard();
+    artworkImage = null;
+    syncForm();
+    render();
+  };
+
+  getElement("btnUpload").onclick = () => getElement("artFile").click();
+
+  getElement("artFile").onchange = async event => {
+    const file = event.target.files[0];
+    if (!file) return;
+    const sequence = ++artworkLoadSequence;
+    const url = URL.createObjectURL(file);
+
+    try {
+      const image = await decodeArtwork(url);
+      if (sequence !== artworkLoadSequence) return;
+
+      const canvas = document.createElement("canvas");
+      const scale = Math.min(1, 2048 / Math.max(image.width, image.height));
+      canvas.width = Math.max(1, Math.round(image.width * scale));
+      canvas.height = Math.max(1, Math.round(image.height * scale));
+      canvas.getContext("2d").drawImage(image, 0, 0, canvas.width, canvas.height);
+
+      currentCard.artData = canvas.toDataURL("image/jpeg", 0.94);
+      artworkImage = image;
+      currentCard.artX = 0;
+      currentCard.artY = 0;
+      currentCard.artZoom = 100;
+      syncForm();
+      render();
+      showToast("Artwork loaded. Save to Set to retain it.");
+    } catch (error) {
+      showToast("Unable to open this image.");
+    } finally {
+      URL.revokeObjectURL(url);
+      event.target.value = "";
+    }
+  };
+
+  getElement("btnResetArt").onclick = () => {
+    currentCard.artX = 0;
+    currentCard.artY = 0;
+    currentCard.artZoom = 100;
+    currentCard.bright = 100;
+    currentCard.contrastArt = 100;
+    currentCard.sat = 100;
+    syncForm();
+    render();
+  };
+
+  getElement("btnSave").onclick = () => {
+    readForm();
+    if (!studioData.sets.length && !makeSet()) return;
+    const set = studioData.sets[activeSetIndex];
+
+    if (!currentCard.setNumber.trim()) {
+      const used = new Set(set.cards.map(card => card.setNumber));
+      let number = set.cards.length + 1;
+      let identifier;
+      do {
+        identifier = `${set.setCode}-EN${String(number++).padStart(3, "0")}`;
+      } while (used.has(identifier));
+      currentCard.setNumber = identifier;
+    }
+
+    const index = set.cards.findIndex(card => {
+      return card.setNumber === currentCard.setNumber;
+    });
+    const copy = cloneCard(currentCard);
+    if (index >= 0) set.cards[index] = copy;
+    else set.cards.push(copy);
+
+    syncForm();
+    refreshSets();
+    render();
+    if (persistSafely()) showToast("Card and artwork saved to set.");
+  };
+
+  getElement("btnExport").onclick = async () => {
+    const button = getElement("btnExport");
+    button.disabled = true;
+    try {
+      readForm();
+      const blob = await pngBlob(currentCard, artworkImage);
+      downloadBlob(
+        blob,
+        `${safeFilename(currentCard.setNumber || currentCard.name)}.png`
+      );
+    } catch (error) {
+      showToast(error.message);
+    } finally {
+      button.disabled = false;
+    }
+  };
+
+  getElement("btnSets").onclick = () => {
+    refreshSets();
+    getElement("setDrawer").classList.add("open");
+  };
+  document.querySelectorAll("[data-close]").forEach(element => {
+    element.onclick = () => getElement("setDrawer").classList.remove("open");
+  });
+
+  getElement("setSelect").onchange = event => {
+    if (event.target.value !== "") activeSetIndex = Number(event.target.value);
+    refreshSets();
+  };
+
+  getElement("btnImport").onclick = () => getElement("jsonFile").click();
+
+  getElement("jsonFile").onchange = async event => {
+    const file = event.target.files[0];
+    if (!file) return;
+    try {
+      const imported = JSON.parse(await file.text());
+      if (!imported || !Array.isArray(imported.sets)) {
+        throw new Error('JSON must contain a "sets" array.');
+      }
+
+      const sets = imported.sets.map(set => {
+        if (!set || typeof set.setCode !== "string" ||
+            typeof set.setName !== "string" || !Array.isArray(set.cards)) {
+          throw new Error("Every set needs setCode, setName, and cards.");
+        }
+        return {
+          ...set,
+          cards: set.cards.map(card => {
+            if (!card || typeof card !== "object" || Array.isArray(card)) {
+              throw new Error("Each card must be an object.");
+            }
+            return normalizeCard(card);
+          })
+        };
+      });
+
+      studioData.sets.push(...sets);
+      activeSetIndex = Math.max(0, studioData.sets.length - sets.length);
+      refreshSets();
+      if (persistSafely()) showToast(`Imported ${sets.length} set(s).`);
+    } catch (error) {
+      showToast(error.message || "Invalid JSON.");
+    } finally {
+      event.target.value = "";
+    }
+  };
+
+  getElement("btnExportJSON").onclick = () => {
+    downloadBlob(
+      new Blob([JSON.stringify(studioData, null, 2)], {
+        type: "application/json"
+      }),
+      "aetherforge-sets.json"
+    );
+  };
+
+  getElement("btnBatch").onclick = async () => {
+    const set = studioData.sets[activeSetIndex];
+    if (!set || !set.cards.length) {
+      showToast("Save cards to a set first.");
+      return;
+    }
+    if (!confirm(
+      `Export ${set.cards.length} PNG files? Your browser may ask you to allow multiple downloads.`
+    )) return;
+
+    const button = getElement("btnBatch");
+    const status = getElement("batchStatus");
+    button.disabled = true;
+    const cards = cloneCard(set.cards);
+    let completed = 0;
+
+    try {
+      for (let index = 0; index < cards.length; index++) {
+        status.textContent = `Rendering ${index + 1} of ${cards.length}…`;
+        const card = normalizeCard(cards[index]);
+        const image = await decodeArtwork(card.artData);
+        const blob = await pngBlob(card, image);
+        downloadBlob(
+          blob,
+          `${String(index + 1).padStart(3, "0")}-${safeFilename(card.setNumber || card.name)}.png`
+        );
+        completed++;
+        await new Promise(resolve => setTimeout(resolve, 800));
+      }
+      status.textContent =
+        `${completed} PNG downloads requested. Check your browser's download permissions.`;
+    } catch (error) {
+      status.textContent = `Stopped after ${completed} cards: ${error.message}`;
+    } finally {
+      button.disabled = false;
+    }
+  };
+}
+
+function bindGestures() {
+  const pointers = new Map();
+  let origin = null;
+  let pinch = null;
+  let interaction = "art";
+
+  const modeRow = document.createElement("div");
+  modeRow.className = "row";
+  const modeButton = document.createElement("button");
+  modeButton.className = "btn";
+  modeButton.textContent = "Gesture mode: Art pan";
+  modeButton.onclick = () => {
+    interaction = interaction === "art" ? "tilt" : "art";
+    modeButton.textContent =
+      interaction === "art" ? "Gesture mode: Art pan" : "Gesture mode: Card tilt";
+  };
+
+  const gyroButton = document.createElement("button");
+  gyroButton.className = "btn";
+  gyroButton.textContent = "Enable phone tilt";
+  let gyroEnabled = false;
+
+  gyroButton.onclick = async () => {
+    if (gyroEnabled) {
+      gyroEnabled = false;
+      gyroButton.textContent = "Enable phone tilt";
+      return;
+    }
+    try {
+      if (!window.DeviceOrientationEvent) {
+        throw new Error("Phone tilt is not available here.");
+      }
+      if (typeof DeviceOrientationEvent.requestPermission === "function") {
+        const permission = await DeviceOrientationEvent.requestPermission();
+        if (permission !== "granted") throw new Error("Tilt permission denied.");
+      }
+      gyroEnabled = true;
+      gyroButton.textContent = "Disable phone tilt";
+      showToast("Phone tilt enabled; availability depends on browser permissions.");
+    } catch (error) {
+      showToast(error.message);
+    }
+  };
+
+  modeRow.append(modeButton, gyroButton);
+  document.querySelector(".cardpane").appendChild(modeRow);
+
+  function point(event) {
+    return { x: event.clientX, y: event.clientY };
+  }
+
+  function distance() {
+    const values = [...pointers.values()];
+    return Math.hypot(
+      values[0].x - values[1].x,
+      values[0].y - values[1].y
+    );
+  }
+
+  function resetOrigin() {
+    if (pointers.size === 1) {
+      const p = [...pointers.values()][0];
+      origin = {
+        x: p.x,
+        y: p.y,
+        artX: currentCard.artX,
+        artY: currentCard.artY,
+        tiltX: cardTilt.x,
+        tiltY: cardTilt.y
+      };
+      pinch = null;
+    } else if (pointers.size >= 2) {
+      pinch = {
+        distance: Math.max(1, distance()),
+        zoom: currentCard.artZoom
+      };
+    }
+  }
+
+  previewCanvas.addEventListener("pointerdown", event => {
+    event.preventDefault();
+    previewCanvas.setPointerCapture(event.pointerId);
+    pointers.set(event.pointerId, point(event));
+    resetOrigin();
+  });
+
+  previewCanvas.addEventListener("pointermove", event => {
+    if (!pointers.has(event.pointerId)) return;
+    pointers.set(event.pointerId, point(event));
+
+    if (pointers.size >= 2 && pinch) {
+      currentCard.artZoom = Math.max(
+        100, Math.min(400, pinch.zoom * distance() / pinch.distance)
+      );
+      getElement("aZoom").value = currentCard.artZoom;
+    } else if (origin) {
+      const dx = event.clientX - origin.x;
+      const dy = event.clientY - origin.y;
+      if (interaction === "art") {
+        const rect = previewCanvas.getBoundingClientRect();
+        currentCard.artX = Math.max(
+          -500, Math.min(500, origin.artX + dx * CARD_WIDTH / rect.width)
+        );
+        currentCard.artY = Math.max(
+          -500, Math.min(500, origin.artY + dy * CARD_HEIGHT / rect.height)
+        );
+        getElement("aX").value = currentCard.artX;
+        getElement("aY").value = currentCard.artY;
+      } else {
+        cardTilt.x = Math.max(-30, Math.min(30, origin.tiltX + dx / 7));
+        cardTilt.y = Math.max(-30, Math.min(30, origin.tiltY + dy / 7));
+        currentCard.lightX = cardTilt.x * 3;
+        currentCard.lightY = cardTilt.y * 3;
+        getElement("tiltX").value = cardTilt.x;
+        getElement("tiltY").value = cardTilt.y;
+        getElement("foilX").value = currentCard.lightX;
+        getElement("foilY").value = currentCard.lightY;
+      }
+    }
+    requestRender();
+  });
+
+  function release(event) {
+    pointers.delete(event.pointerId);
+    if (!pointers.size) {
+      origin = null;
+      pinch = null;
+    } else {
+      resetOrigin();
+    }
+  }
+
+  previewCanvas.addEventListener("pointerup", release);
+  previewCanvas.addEventListener("pointercancel", release);
+  previewCanvas.addEventListener("lostpointercapture", release);
+
+  previewCanvas.addEventListener("wheel", event => {
+    event.preventDefault();
+    currentCard.artZoom = Math.max(
+      100, Math.min(400, currentCard.artZoom - Math.sign(event.deltaY) * 8)
+    );
+    getElement("aZoom").value = currentCard.artZoom;
+    requestRender();
+  }, { passive: false });
+
+  window.addEventListener("deviceorientation", event => {
+    if (!gyroEnabled || autoTiltEnabled || document.hidden) return;
+    if (event.gamma === null || event.beta === null) return;
+    cardTilt.x = Math.max(-25, Math.min(25, event.gamma));
+    cardTilt.y = Math.max(-25, Math.min(25, event.beta - 45));
+    currentCard.lightX = cardTilt.x * 3;
+    currentCard.lightY = cardTilt.y * 3;
+    requestRender();
+  }, { passive: true });
+
+  function animate(time) {
+    if (!autoTiltEnabled) {
+      animationFrame = 0;
+      return;
+    }
+    if (!document.hidden) {
+      const seconds = time / 1000;
+      cardTilt.x = Math.sin(seconds * 0.8) * 14;
+      cardTilt.y = Math.cos(seconds * 0.65) * 10;
+      currentCard.lightX = cardTilt.x * 3;
+      currentCard.lightY = cardTilt.y * 3;
+      render();
+    }
+    animationFrame = requestAnimationFrame(animate);
+  }
+
+  getElement("autoTilt").onchange = event => {
+    autoTiltEnabled = event.target.checked;
+    if (autoTiltEnabled && !animationFrame) {
+      animationFrame = requestAnimationFrame(animate);
+    }
+  };
+}
+
+buildOptions();
+syncForm();
+refreshSets();
+bindEditor();
+bindGestures();
+render();
+</script>
+</body>
+</html>
